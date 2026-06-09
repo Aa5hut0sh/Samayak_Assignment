@@ -1,159 +1,130 @@
-# Turborepo starter
+# Samayak — Admin Panel
 
-This Turborepo starter is maintained by the Turborepo core team.
+---
 
-## Using this example
+## 🔗 Live Demo
 
-Run the following command:
+| | URL |
+|---|---|
+| **Live Demo** | https://samayak.ashuttosh.me |
+| **Health Check** | https://samayak.ashuttosh.me/api/health |
 
-```sh
-npx create-turbo@latest
+**Demo login**
+```
+Email:    admin@samayak.in
+Password: demo1234
 ```
 
-## What's inside?
+---
 
-This Turborepo includes the following packages/apps:
+## 🚀 Run Locally
 
-### Apps and Packages
+### Option A — Docker (recommended, one command)
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+**1. Clone the repo**
+```bash
+git clone https://github.com/Aa5hut0sh/Samayak_Assignment.git
+cd Samayak_Assignment
 ```
 
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo build
-bun dlx turbo build
-bun exec turbo build
+**2. Create a `.env` file in the root**
+```env
+# Required — get a free key at console.groq.com
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+> Everything else (Postgres, Redis, JWT secret, ports) is already set inside `docker-compose.yml`.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
+**3. Start all services**
+```bash
+docker compose up -d
 ```
 
-Without global `turbo`:
+This starts:
+- PostgreSQL on `5432`
+- Redis on `6379`
+- Backend API on `http://localhost:3001`
+- Frontend on `http://localhost:3000`
 
-```sh
-npx turbo build --filter=docs
-bun exec turbo build --filter=docs
-bun exec turbo build --filter=docs
+**4. Seed the database**
+```bash
+# Run migrations
+docker compose exec backend bunx prisma migrate deploy
+
+# Seed CSE timetable data + admin user
+docker compose exec backend bun run prisma/seed.ts
 ```
 
-### Develop
+**5. Open the app**
 
-To develop all apps and packages, run the following command:
+→ http://localhost:3000
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+---
 
-```sh
-cd my-turborepo
-turbo dev
+### Option B — Manual (without Docker)
+
+**1. Clone and install**
+```bash
+git clone https://github.com/Aa5hut0sh/Samayak_Assignment.git
+cd Samayak_Assignment
+bun install
 ```
 
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-bun exec turbo dev
-bun exec turbo dev
+**2. Start Postgres + Redis via Docker**
+```bash
+docker compose up postgres redis -d
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
+**3. Create `apps/backend/.env`**
+```env
+DATABASE_URL=postgresql://samayak:samayak@localhost:5432/samayak
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=supersecret
+ADMIN_SECRET=Iamtheadmin
+GROQ_API_KEY=your_groq_api_key_here
+PORT=3001
 ```
 
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-bun exec turbo dev --filter=web
-bun exec turbo dev --filter=web
+**4. Create `apps/frontend/.env`**
+```env
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3001
 ```
 
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
+**5. Run migrations + generate Prisma client**
+```bash
+cd packages/db
+bunx prisma generate
+bunx prisma migrate dev
 ```
 
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-bun exec turbo login
-bun exec turbo login
+**6. Seed the database**
+```bash
+# Still inside packages/db
+bun run prisma/seed.ts
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
+**7. Start backend + frontend**
+```bash
+# From repo root
+bun run dev
 ```
 
-Without global `turbo`:
+- Backend → http://localhost:3001
+- Frontend → http://localhost:3000
 
-```sh
-npx turbo link
-bun exec turbo link
-bun exec turbo link
-```
+---
 
-## Useful Links
+## 🔑 Environment Variables
 
-Learn more about the power of Turborepo:
+| Variable | Where | Description |
+|---|---|---|
+| `GROQ_API_KEY` | backend | Vision model for PDF OCR · [console.groq.com](https://console.groq.com) |
+| `DATABASE_URL` | backend | Postgres connection string |
+| `REDIS_URL` | backend | Redis connection string |
+| `JWT_SECRET` | backend | JWT signing secret |
+| `ADMIN_SECRET` | backend | Secret required to register first admin |
+| `PORT` | backend | API port (default `3001`) |
+| `NEXT_PUBLIC_BACKEND_URL` | frontend | Backend base URL |
 
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+---
+
