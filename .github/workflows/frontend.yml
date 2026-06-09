@@ -23,7 +23,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: dockerfiles/dockerfile.frontend
+          file: dockerfiles/frontend.dockerfile
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/samayak-frontend:prod
           build-args: |
