@@ -27,6 +27,8 @@ jobs:
           file: dockerfiles/backend.dockerfile
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/samayak-backend:prod
+          build-args: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
 
       - name: Deploy to Production Server
         uses: appleboy/ssh-action@master
