@@ -20,6 +20,6 @@ RUN bun install
 
 EXPOSE 3001
 
-RUN cd packages/database && bunx prisma generate
+RUN cd packages/database && bunx --bun prisma generate
 
 CMD ["bun", "run","--cwd", "apps/backend", "index.ts"]
