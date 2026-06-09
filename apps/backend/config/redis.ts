@@ -1,0 +1,13 @@
+import Redis from "ioredis";
+
+export const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
+  maxRetriesPerRequest: null,
+});
+
+redis.on("error", (err: unknown) => {
+  console.error("Redis Client Error:", err);
+});
+
+redis.on("connect", () => {
+  console.log("Redis connected successfully");
+});

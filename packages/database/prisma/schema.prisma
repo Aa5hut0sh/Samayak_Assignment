@@ -1,0 +1,209 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  COORDINATOR
+  PROFESSOR
+  HOD
+  DEAN
+}
+
+enum RoomType {
+  CLASSROOM
+  LAB
+  OTHER
+}
+
+enum CourseType {
+  LECTURE
+  LAB
+  TUTORIAL
+}
+
+enum ImportStatus {
+  QUEUED
+  PARSING
+  INTEGRATING
+  DONE
+  FAILED
+}
+
+
+model Department {
+  id        String   @id @default(uuid())
+  code      String   @unique          
+  name      String
+  deletedAt DateTime?
+
+  branches  Branch[]
+  rooms     Room[]
+  users     User[]
+  imports   ImportJob[]
+  faulties Faculty[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Branch {
+  id           String     @id @default(uuid())
+  name         String                
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  deletedAt    DateTime?
+
+  sections  Section[]
+  courses   Course[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, departmentId])
+}
+
+model Section {
+  id       String  @id @default(uuid())
+  name     String                      
+  semester Int                         
+  branchId String
+  branch   Branch  @relation(fields: [branchId], references: [id])
+  deletedAt DateTime?
+
+  slots    Slot[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, semester, branchId])
+}
+
+model Room {
+  id           String     @id @default(uuid())
+  number       String                  
+  capacity     Int?                     
+  type         RoomType
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  deletedAt    DateTime?
+
+  slots        Slot[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([number, departmentId])
+}
+
+model Course {
+  id       String     @id @default(uuid())
+  code     String
+  name     String
+  credits  Float                        
+  isZeroCredit Boolean @default(false)  
+  type     CourseType
+  branchId String
+  branch   Branch     @relation(fields: [branchId], references: [id])
+  semester Int
+  deletedAt DateTime?
+  scheduledContactHours Float @default(0) // Computed or updated during import
+  requiredContactHours  Float // Derived from credits
+
+  slots    Slot[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([code, branchId, semester])
+}
+
+model Faculty {
+  id           String     @id @default(uuid())
+  name         String
+  email        String?    @unique       
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  deletedAt    DateTime?
+
+  slotAssignments SlotFaculty[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Slot {
+  id        String  @id @default(uuid())
+  day       String                     
+  period    Int                        
+  sectionId String
+  section   Section @relation(fields: [sectionId], references: [id])
+  courseId  String
+  course    Course  @relation(fields: [courseId], references: [id])
+  roomId    String
+  room      Room    @relation(fields: [roomId], references: [id])
+
+  faculty   SlotFaculty[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([day, period, sectionId])  // a section can only be in one place at a time
+  @@unique([day, period, roomId])     // a room can only host one class at a time
+}
+
+
+model SlotFaculty {
+  slotId    String
+  slot      Slot    @relation(fields: [slotId], references: [id])
+  facultyId String
+  faculty   Faculty @relation(fields: [facultyId], references: [id])
+
+  @@id([slotId, facultyId])
+}
+
+
+
+model User {
+  id           String     @id @default(uuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         Role
+  departmentId String?                  // nullable — ADMIN may not belong to one dept
+  department   Department? @relation(fields: [departmentId], references: [id])
+  deletedAt    DateTime?                // soft delete
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model ImportJob {
+  id           String       @id @default(uuid())
+  departmentId String?
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  filename     String
+  status       ImportStatus @default(QUEUED)
+  bullJobId    String?                  // BullMQ job ID for correlation
+
+  created      Int?                     // entities created
+  matched      Int?                     // entities matched to existing records
+  failed       Int?                     // rows that could not be parsed
+  errorLog     Json?                    // array of { row, reason } objects
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
