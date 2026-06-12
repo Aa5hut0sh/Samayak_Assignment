@@ -167,7 +167,7 @@ CRITICAL RULES:
 
     return parsed;
   } catch (err: any) {
-    console.warn(`⚠️  Page ${pageNum} Groq call failed:`, err.message);
+    console.warn(`Page ${pageNum} Groq call failed:`, err.message);
     return { slots: [], facultyMap: {}, courseMetadata: [] };
   }
 }
@@ -214,7 +214,7 @@ function resolveCourseCodes(
 
 export class PdfParserService {
   static async parseTimetable(filePath: string): Promise<ParsedTimetable[]> {
-    console.log("📄 Converting PDF pages to images...");
+    console.log("Converting PDF pages to images...");
     const allTimetables: ParsedTimetable[] = [];
     let current: ParsedTimetable | null = null;
 

@@ -8,7 +8,7 @@ import fs from "fs";
 export const pdfWorker = new Worker(
   "pdf-ingestion",
   async (job: Job) => {
-    console.log("🔧 PDF worker picked up job:", job.id);
+    console.log("PDF worker picked up job:", job.id);
     const { importJobId, filePath } = job.data;
     let created = 0;
     let matched = 0;

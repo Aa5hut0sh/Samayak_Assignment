@@ -11,7 +11,7 @@ let cacheKey: string | null = null;
 export const invalidateAnalyticsCache = () => {
   cachedMetrics = null;
   cacheKey = null;
-  console.log("🔄 Analytics cache invalidated");
+  console.log("Analytics cache invalidated");
 };
 
 

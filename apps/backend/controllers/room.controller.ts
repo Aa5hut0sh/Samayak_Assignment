@@ -84,9 +84,9 @@ export const createRoom = async (req: Request, res: Response, next: NextFunction
       create: { number, capacity, type, departmentId },
     });
 
-    
-    await broadcastDashboardUpdate("Room created or updated", departmentId);
     invalidateAnalyticsCache();
+    await broadcastDashboardUpdate("Room created or updated", departmentId);
+    
 
     res.status(201).json({ success: true, data: room });
   } catch (err) {
@@ -174,8 +174,9 @@ export const deleteRoom = async (req: Request, res: Response, next: NextFunction
       data: { deletedAt: new Date() },
     });
 
-    await broadcastDashboardUpdate("Room deleted", room.departmentId);
     invalidateAnalyticsCache();
+    await broadcastDashboardUpdate("Room deleted", room.departmentId);
+    
 
     res.json({ success: true, message: "Room deleted successfully" });
   } catch (err) {

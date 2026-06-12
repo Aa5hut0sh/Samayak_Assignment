@@ -168,9 +168,9 @@ export const updateCourse = async (req: Request, res: Response, next: NextFuncti
       },
     });
 
-
-    await broadcastDashboardUpdate("Course updated", existing.branchId);
     invalidateAnalyticsCache();
+    await broadcastDashboardUpdate("Course updated", existing.branchId);
+    
 
     res.json({ success: true, data: updated });
   } catch (err) {
@@ -204,8 +204,9 @@ export const deleteCourse = async (req: Request, res: Response, next: NextFuncti
       data: { deletedAt: new Date() },
     });
 
-    await broadcastDashboardUpdate("Course deleted", course.branchId);
     invalidateAnalyticsCache();
+    await broadcastDashboardUpdate("Course deleted", course.branchId);
+    
 
     res.json({ success: true, message: "Course deleted successfully" });
   } catch (err) {
