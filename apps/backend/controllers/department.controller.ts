@@ -47,13 +47,7 @@ export const getDepartments = async (req: Request, res: Response, next: NextFunc
         take: limit,
         orderBy: { name: "asc" },
         include: {
-          branches: {
-            select: {
-              id: true,
-              name: true,
-              code: true,
-            },
-          },
+          branches: true,
           _count: {
             select: {
               branches: true,
